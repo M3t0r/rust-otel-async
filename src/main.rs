@@ -5,7 +5,7 @@ use actix_web_opentelemetry::ClientExt;
 use opentelemetry::{
     global::tracer,
     sdk::{trace::Sampler, Resource},
-    trace::{mark_span_as_active, Tracer},
+    trace::{mark_span_as_active, FutureExt, Tracer},
     KeyValue,
 };
 use opentelemetry_otlp::WithExportConfig;
@@ -22,33 +22,39 @@ async fn greet() -> impl Responder {
         .await
         .expect("reading response from sub-service");
 
-    get_from_db().await;
-    update_cache().await;
+    get_from_db().with_current_context().await;
+    update_cache().with_current_context().await;
     "Hello World!"
 }
 
 async fn get_from_db() -> () {
     let _span_guard = mark_span_as_active(tracer("mainservice").start("get_from_db"));
 
-    sleep(Duration::from_millis(250)).await;
+    sleep(Duration::from_millis(250))
+        .with_current_context()
+        .await;
 }
 
 async fn update_cache() -> () {
     let _span_guard = mark_span_as_active(tracer("mainservice").start("update_cache"));
 
-    sleep(Duration::from_millis(75)).await;
+    sleep(Duration::from_millis(75))
+        .with_current_context()
+        .await;
 }
 
 #[post("/microservice")]
 async fn microservice() -> impl Responder {
-    upsert_into_db().await;
+    upsert_into_db().with_current_context().await;
     "Hello microservice!"
 }
 
 async fn upsert_into_db() -> () {
     let _span_guard = mark_span_as_active(tracer("microservice").start("upsert_into_db"));
 
-    sleep(Duration::from_millis(375)).await;
+    sleep(Duration::from_millis(375))
+        .with_current_context()
+        .await;
 }
 
 fn setup_tracing() -> () {
