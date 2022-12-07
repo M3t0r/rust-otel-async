@@ -12,3 +12,4 @@ tokio = "1.22.0"
 opentelemetry = { version = "0.18.0", features = ["rt-tokio-current-thread"] }
 opentelemetry-otlp = { version = "0.11.0", features = ["tls-roots"] }
 tonic = "0.8.3"
+actix-web-opentelemetry = "0.13.0"

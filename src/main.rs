@@ -77,8 +77,13 @@ fn setup_tracing() -> () {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     setup_tracing();
-    HttpServer::new(|| App::new().service(greet).service(microservice))
-        .bind(("127.0.0.1", 8080))?
-        .run()
-        .await
+    HttpServer::new(|| {
+        App::new()
+            .wrap(actix_web_opentelemetry::RequestTracing::new())
+            .service(greet)
+            .service(microservice)
+    })
+    .bind(("127.0.0.1", 8080))?
+    .run()
+    .await
 }
