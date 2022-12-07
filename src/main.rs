@@ -1,6 +1,7 @@
 use actix_web::{get, post, App, HttpServer, Responder};
 use tokio::time::{sleep, Duration};
 
+use actix_web_opentelemetry::ClientExt;
 use opentelemetry::{
     sdk::{trace::Sampler, Resource},
     KeyValue,
@@ -11,6 +12,7 @@ use opentelemetry_otlp::WithExportConfig;
 async fn greet() -> impl Responder {
     let _ms_resp = awc::Client::default()
         .post("http://127.0.0.1:8080/microservice")
+        .trace_request()
         .send()
         .await
         .expect("requesting sub-service")
