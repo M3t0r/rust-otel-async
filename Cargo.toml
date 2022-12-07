@@ -7,3 +7,4 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4.2.1"
+tokio = "1.22.0"
