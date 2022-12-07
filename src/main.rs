@@ -54,6 +54,11 @@ fn setup_tracing() -> () {
             .expect("parsing HONEYCOMB_TOKEN"),
     );
 
+    // add propagation to connect spans with remote systems
+    opentelemetry::global::set_text_map_propagator(
+        opentelemetry::sdk::propagation::TraceContextPropagator::new(),
+    );
+
     // create a gRPC OTLP exporter
     let tracing_exporter = opentelemetry_otlp::new_exporter()
         .tonic() // gRPC
@@ -66,7 +71,9 @@ fn setup_tracing() -> () {
         .with_exporter(tracing_exporter)
         .with_trace_config(
             opentelemetry::sdk::trace::config()
-                .with_sampler(Sampler::AlwaysOn)
+                .with_sampler(Sampler::ParentBased(std::boxed::Box::new(
+                    Sampler::AlwaysOn,
+                )))
                 .with_resource(Resource::new(vec![
                     KeyValue::new("service.name", env!("CARGO_PKG_NAME")),
                     KeyValue::new("service.version", env!("CARGO_PKG_VERSION")),
